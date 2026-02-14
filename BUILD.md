@@ -16,13 +16,13 @@ pip install -e .
 For development (linting, type-checking, testing), also install the dev extras:
 
 ```sh
-pip install -e ".[dev]"
+pip install -e . --group dev
 ```
 
 For builds and deploys , also install the build extras:
 
 ```sh
-pip install -e ".[build]"
+pip install -e . --group build
 ```
 
 ## Running Tests
@@ -41,7 +41,7 @@ pytest --cov=instaparser
 
 ```sh
 ruff check instaparser/
-black --check instaparser/
+ruff format --check instaparser/
 mypy instaparser/
 ```
 
