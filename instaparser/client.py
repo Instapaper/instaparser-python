@@ -141,8 +141,22 @@ class InstaparserClient:
 
         response = self.session.post(endpoint, json=payload)
         data = self._handle_response(response)
-
-        return Article(data)
+        return Article(
+            url=data.get("url"),
+            title=data.get("title"),
+            site_name=data.get("site_name"),
+            author=data.get("author"),
+            date=data.get("date"),
+            description=data.get("description"),
+            thumbnail=data.get("thumbnail"),
+            words=data.get("words", 0),
+            is_rtl=data.get("is_rtl", False),
+            images=data.get("images", []),
+            videos=data.get("videos", []),
+            html=data.get("html"),
+            text=data.get("text"),
+            markdown=data.get("markdown"),
+        )
 
     def Summary(
         self,
@@ -271,5 +285,18 @@ class InstaparserClient:
         else:
             raise InstaparserValidationError("Either 'url' or 'file' must be provided")
 
-        data = self._handle_response(response)
-        return PDF(data)
+        result = self._handle_response(response)
+        return PDF(
+            url=result.get("url"),
+            title=result.get("title"),
+            site_name=result.get("site_name"),
+            author=result.get("author"),
+            date=result.get("date"),
+            description=result.get("description"),
+            thumbnail=result.get("thumbnail"),
+            words=result.get("words", 0),
+            images=result.get("images", []),
+            html=result.get("html"),
+            text=result.get("text"),
+            markdown=result.get("markdown"),
+        )

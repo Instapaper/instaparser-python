@@ -2,9 +2,11 @@
 Article class representing a parsed article from Instaparser.
 """
 
+from dataclasses import dataclass, field
 from typing import Any
 
 
+@dataclass(repr=False)
 class Article:
     """
     Represents a parsed article from Instaparser.
@@ -27,30 +29,25 @@ class Article:
         markdown: The markdown body (if output was 'markdown')
     """
 
-    def __init__(self, data: dict[str, Any]):
-        """
-        Initialize an Article from API response data.
+    url: str | None = None
+    title: str | None = None
+    site_name: str | None = None
+    author: str | None = None
+    date: Any | None = None
+    description: str | None = None
+    thumbnail: str | None = None
+    words: int = 0
+    is_rtl: bool = False
+    images: list = field(default_factory=list)
+    videos: list = field(default_factory=list)
+    html: str | None = None
+    text: str | None = None
+    markdown: str | None = None
 
-        Args:
-            data: Dictionary containing article data from the API
-        """
-        self.url = data.get("url")
-        self.title = data.get("title")
-        self.site_name = data.get("site_name")
-        self.author = data.get("author")
-        self.date = data.get("date")
-        self.description = data.get("description")
-        self.thumbnail = data.get("thumbnail")
-        self.words = data.get("words", 0)
-        self.is_rtl = data.get("is_rtl", False)
-        self.images = data.get("images", [])
-        self.videos = data.get("videos", [])
-
-        self.html = data.get("html")
-        self.text = data.get("text")
-        self.markdown = data.get("markdown")
-
-        self.body = self.html or self.text or self.markdown
+    @property
+    def body(self) -> str | None:
+        """The article body (html if available, otherwise text, then markdown)."""
+        return self.html or self.text or self.markdown
 
     def __repr__(self) -> str:
         return f"<Article url={self.url!r} title={self.title!r}>"
