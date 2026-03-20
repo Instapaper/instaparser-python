@@ -48,7 +48,9 @@ build = [
 [project.urls]
 Homepage = "https://instaparser.com"
 Documentation = "https://instaparser.com/docs"
+Repository = "https://github.com/Instapaper/instaparser-python.git"
 Issues = "https://github.com/Instapaper/instaparser-python/issues"
+Changelog = "https://github.com/Instapaper/instapaper-python/blob/main/CHANGELOG.md"
 
 [tool.hatch.version]
 path = "instaparser/__init__.py"
