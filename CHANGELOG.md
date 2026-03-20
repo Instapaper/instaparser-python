@@ -11,4 +11,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Markdown output for Article and PDF APIs.
 
-[1.0.1]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[1.0.1]: https://github.com/Instapaper/instaparser-python/compare/v1.1.0...v1.1.1
