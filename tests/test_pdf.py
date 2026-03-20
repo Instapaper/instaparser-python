@@ -96,6 +96,19 @@ class TestPDF:
         assert pdf.is_rtl is False
         assert pdf.videos == []
     
+    def test_pdf_with_markdown_output(self):
+        """Test PDF with markdown output format."""
+        data = {
+            "url": "https://example.com/document.pdf",
+            "markdown": "# PDF Title\n\nPDF content in **markdown**",
+        }
+        pdf = PDF(data)
+        
+        assert pdf.markdown == "# PDF Title\n\nPDF content in **markdown**"
+        assert pdf.body == "# PDF Title\n\nPDF content in **markdown**"
+        assert pdf.is_rtl is False
+        assert pdf.videos == []
+    
     def test_pdf_overrides_is_rtl_even_if_true_in_data(self):
         """Test that PDF always overrides is_rtl to False even if data has True."""
         data = {

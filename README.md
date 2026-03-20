@@ -28,7 +28,7 @@ print(article.words)
 
 ## Features
 
-- **Article Parsing**: Extract clean HTML or text from web articles
+- **Article Parsing**: Extract clean HTML, text, or markdown from web articles
 - **Summary Generation**: Generate AI-powered summaries with key sentences
 - **PDF Processing**: Parse PDFs from URLs or file uploads
 - **Error Handling**: Comprehensive exception handling for API errors
@@ -54,6 +54,11 @@ print(article.body)  # Same as html when output='html'
 article = client.Article(url="https://example.com/article", output="text")
 print(article.text)  # Plain text content
 print(article.body)  # Same as text when output='text'
+
+# Parse from URL (markdown output)
+article = client.Article(url="https://example.com/article", output="markdown")
+print(article.markdown)  # Markdown content
+print(article.body)      # Same as markdown when output='markdown'
 
 # Parse from HTML content
 html_content = "<html><body><h1>Title</h1><p>Content</p></body></html>"
@@ -82,9 +87,10 @@ article.words        # Word count
 article.is_rtl       # Right-to-left language flag
 
 # Content
-article.body         # HTML or text (depending on output format)
+article.body         # HTML, text, or markdown (depending on output format)
 article.html         # HTML content (if output='html')
 article.text         # Plain text (if output='text')
+article.markdown     # Markdown content (if output='markdown')
 
 # Media
 article.images       # List of images
@@ -128,6 +134,11 @@ with open('document.pdf', 'rb') as f:
 pdf = client.PDF(url="https://example.com/document.pdf", output="text")
 print(pdf.text)
 print(pdf.body)  # Same as text when output='text'
+
+# Parse PDF with markdown output
+pdf = client.PDF(url="https://example.com/document.pdf", output="markdown")
+print(pdf.markdown)
+print(pdf.body)  # Same as markdown when output='markdown'
 
 # Access all Article properties
 print(pdf.title)
@@ -180,7 +191,7 @@ Parse an article from a URL or HTML content.
 
 - `url`: URL of the article (required)
 - `content`: Optional HTML content to parse instead of fetching from URL
-- `output`: Output format - `'html'` (default) or `'text'`
+- `output`: Output format - `'html'` (default), `'text'`, or `'markdown'`
 - `use_cache`: Whether to use cache (default: `True`)
 
 Returns: `Article` object
@@ -202,7 +213,7 @@ Parse a PDF from a URL or file.
 
 - `url`: URL of the PDF (required for GET request)
 - `file`: PDF file to upload (required for POST request)
-- `output`: Output format - `'html'` (default) or `'text'`
+- `output`: Output format - `'html'` (default), `'text'`, or `'markdown'`
 - `use_cache`: Whether to use cache (default: `True`)
 
 Returns: `PDF` object (inherits from `Article`)
@@ -224,9 +235,10 @@ Represents a parsed article from Instaparser.
 - `is_rtl`: Right-to-left language flag
 - `images`: List of images
 - `videos`: List of embedded videos
-- `body`: Article body (HTML or text)
+- `body`: Article body (HTML, text, or markdown)
 - `html`: HTML content (if output was 'html')
 - `text`: Plain text content (if output was 'text')
+- `markdown`: Markdown content (if output was 'markdown')
 
 ### PDF
 

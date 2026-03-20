@@ -220,12 +220,34 @@ class TestInstaparserClientArticle:
             call_args = mock_post.call_args
             assert call_args[1]['json']['use_cache'] == 'false'
     
+    def test_article_with_markdown_output(self, client, mock_response):
+        """Test parsing article with markdown output."""
+        markdown_response = {
+            "url": "https://example.com/article",
+            "title": "Test Article",
+            "markdown": "# Test Article\n\nMarkdown body content.",
+        }
+        with patch.object(client.session, 'post') as mock_post:
+            response = mock_response(status_code=200, json_data=markdown_response)
+            mock_post.return_value = response
+            
+            article = client.Article(
+                url="https://example.com/article",
+                output="markdown"
+            )
+            
+            assert article.markdown == "# Test Article\n\nMarkdown body content."
+            assert article.body == "# Test Article\n\nMarkdown body content."
+            
+            call_args = mock_post.call_args
+            assert call_args[1]['json']['output'] == 'markdown'
+    
     def test_article_invalid_output(self, client):
         """Test that invalid output format raises ValidationError."""
         with pytest.raises(InstaparserValidationError) as exc_info:
             client.Article(url="https://example.com/article", output="invalid")
         
-        assert "output must be 'html' or 'text'" in str(exc_info.value)
+        assert "output must be 'html', 'text', or 'markdown'" in str(exc_info.value)
 
 
 class TestInstaparserClientSummary:
@@ -431,12 +453,29 @@ class TestInstaparserClientPDF:
             call_args = mock_post.call_args
             assert call_args[1]['data']['url'] == "https://example.com/document.pdf"
     
+    def test_pdf_with_markdown_output(self, client, mock_pdf_response, mock_response):
+        """Test parsing PDF with markdown output."""
+        with patch.object(client.session, 'get') as mock_get:
+            pdf_response = dict(mock_pdf_response)
+            pdf_response['markdown'] = "# PDF Document\n\nPDF content in markdown"
+            pdf_response.pop('html', None)
+            response = mock_response(status_code=200, json_data=pdf_response)
+            mock_get.return_value = response
+            
+            pdf = client.PDF(
+                url="https://example.com/document.pdf",
+                output="markdown"
+            )
+            
+            call_args = mock_get.call_args
+            assert call_args[1]['params']['output'] == 'markdown'
+    
     def test_pdf_invalid_output(self, client):
         """Test that invalid output format raises ValidationError."""
         with pytest.raises(InstaparserValidationError) as exc_info:
             client.PDF(url="https://example.com/document.pdf", output="invalid")
         
-        assert "output must be 'html' or 'text'" in str(exc_info.value)
+        assert "output must be 'html', 'text', or 'markdown'" in str(exc_info.value)
     
     def test_pdf_no_url_or_file(self, client):
         """Test that missing both url and file raises ValidationError."""

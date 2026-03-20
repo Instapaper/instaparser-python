@@ -104,7 +104,7 @@ def main() -> None:
     article_parser.add_argument("url", help="Article URL")
     article_parser.add_argument(
         "--output",
-        choices=("html", "text"),
+        choices=("html", "text", "markdown"),
         default="html",
         help="Output format (default: html)",
     )
@@ -126,7 +126,7 @@ def main() -> None:
     pdf_parser.add_argument("--file", help="Path to PDF file (alternative to --url)")
     pdf_parser.add_argument(
         "--output",
-        choices=("html", "text"),
+        choices=("html", "text", "markdown"),
         default="html",
         help="Output format (default: html)",
     )

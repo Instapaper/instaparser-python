@@ -271,6 +271,26 @@ class TestOutputFormats:
             )
             assert article_text.body == "Text content"
     
+    def test_article_markdown_output(self, api_key, base_url, mock_response):
+        """Test Article with markdown output."""
+        client = InstaparserClient(api_key=api_key, base_url=base_url)
+        
+        markdown_data = {
+            "url": "https://example.com/article",
+            "markdown": "# Article Title\n\nMarkdown content",
+        }
+        
+        with patch.object(client.session, 'post') as mock_post:
+            response = mock_response(status_code=200, json_data=markdown_data)
+            mock_post.return_value = response
+            
+            article = client.Article(
+                url="https://example.com/article",
+                output="markdown"
+            )
+            assert article.markdown == "# Article Title\n\nMarkdown content"
+            assert article.body == "# Article Title\n\nMarkdown content"
+    
     def test_pdf_html_vs_text_output(self, api_key, base_url, mock_response):
         """Test PDF with HTML and text outputs."""
         client = InstaparserClient(api_key=api_key, base_url=base_url)
@@ -304,3 +324,23 @@ class TestOutputFormats:
                 output="text"
             )
             assert pdf_text.body == "PDF Text"
+    
+    def test_pdf_markdown_output(self, api_key, base_url, mock_response):
+        """Test PDF with markdown output."""
+        client = InstaparserClient(api_key=api_key, base_url=base_url)
+        
+        markdown_data = {
+            "url": "https://example.com/document.pdf",
+            "markdown": "# PDF Title\n\nPDF markdown content",
+        }
+        
+        with patch.object(client.session, 'get') as mock_get:
+            response = mock_response(status_code=200, json_data=markdown_data)
+            mock_get.return_value = response
+            
+            pdf = client.PDF(
+                url="https://example.com/document.pdf",
+                output="markdown"
+            )
+            assert pdf.markdown == "# PDF Title\n\nPDF markdown content"
+            assert pdf.body == "# PDF Title\n\nPDF markdown content"

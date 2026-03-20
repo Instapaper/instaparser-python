@@ -129,7 +129,7 @@ class InstaparserClient:
         Args:
             url: URL of the article to parse (required)
             content: Optional raw HTML content to parse instead of fetching from URL
-            output: Output format, either 'html' (default) or 'text'
+            output: Output format - 'html' (default), 'text', or 'markdown'
             use_cache: Whether to use cache (default: True)
             
         Returns:
@@ -140,8 +140,8 @@ class InstaparserClient:
             >>> print(article.title)
             >>> print(article.body)
         """
-        if output not in ('html', 'text'):
-            raise InstaparserValidationError("output must be 'html' or 'text'")
+        if output not in ('html', 'text', 'markdown'):
+            raise InstaparserValidationError("output must be 'html', 'text', or 'markdown'")
         
         endpoint = urljoin(self.base_url, '/api/1/article')
         payload = {
@@ -247,7 +247,7 @@ class InstaparserClient:
         Args:
             url: URL of the PDF to parse (required for GET request)
             file: PDF file to upload (required for POST request, can be file-like object or bytes)
-            output: Output format, either 'html' (default) or 'text'
+            output: Output format - 'html' (default), 'text', or 'markdown'
             use_cache: Whether to use cache (default: True)
             
         Returns:
@@ -261,8 +261,8 @@ class InstaparserClient:
             >>> with open('document.pdf', 'rb') as f:
             ...     pdf = client.PDF(file=f)
         """
-        if output not in ('html', 'text'):
-            raise InstaparserValidationError("output must be 'html' or 'text'")
+        if output not in ('html', 'text', 'markdown'):
+            raise InstaparserValidationError("output must be 'html', 'text', or 'markdown'")
         
         endpoint = urljoin(self.base_url, '/api/1/pdf')
         

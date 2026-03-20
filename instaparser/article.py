@@ -21,9 +21,10 @@ class Article:
         is_rtl: Whether the article is right-to-left (Arabic/Hebrew)
         images: List of images in the article
         videos: List of embedded videos
-        body: The article body (HTML or text depending on output format)
+        body: The article body (HTML, text, or markdown depending on output format)
         html: The HTML body (if output was 'html')
         text: The plain text body (if output was 'text')
+        markdown: The markdown body (if output was 'markdown')
     """
     
     def __init__(self, data: dict[str, Any]):
@@ -45,11 +46,11 @@ class Article:
         self.images = data.get('images', [])
         self.videos = data.get('videos', [])
         
-        # Body can be either HTML or text depending on output format
         self.html = data.get('html')
         self.text = data.get('text')
+        self.markdown = data.get('markdown')
         
-        self.body = self.html or self.text
+        self.body = self.html or self.text or self.markdown
     
     def __repr__(self) -> str:
         return f"<Article url={self.url!r} title={self.title!r}>"

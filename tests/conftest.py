@@ -66,6 +66,25 @@ def mock_article_text_response():
 
 
 @pytest.fixture
+def mock_article_markdown_response():
+    """Mock article API response with markdown output."""
+    return {
+        "url": "https://example.com/article",
+        "title": "Test Article Title",
+        "site_name": "Example Site",
+        "author": "John Doe",
+        "date": 1609459200,
+        "description": "This is a test article description",
+        "thumbnail": "https://example.com/thumb.jpg",
+        "words": 500,
+        "is_rtl": False,
+        "images": ["https://example.com/image1.jpg"],
+        "videos": [],
+        "markdown": "# Test Article Title\n\nThis is the article body in **markdown** format.",
+    }
+
+
+@pytest.fixture
 def mock_summary_response():
     """Mock summary API response."""
     return {

@@ -52,7 +52,22 @@ class TestArticle:
         
         assert article.text == "Article body in plain text"
         assert article.html is None
+        assert article.markdown is None
         assert article.body == "Article body in plain text"
+    
+    def test_article_initialization_with_markdown_output(self):
+        """Test Article initialization with markdown output."""
+        data = {
+            "url": "https://example.com/article",
+            "title": "Test Article",
+            "markdown": "# Test Article\n\nArticle body in **markdown**",
+        }
+        article = Article(data)
+        
+        assert article.markdown == "# Test Article\n\nArticle body in **markdown**"
+        assert article.html is None
+        assert article.text is None
+        assert article.body == "# Test Article\n\nArticle body in **markdown**"
     
     def test_article_initialization_with_minimal_data(self):
         """Test Article initialization with minimal data."""
@@ -66,6 +81,7 @@ class TestArticle:
         assert article.is_rtl is False
         assert article.images == []
         assert article.videos == []
+        assert article.markdown is None
         assert article.body is None
     
     def test_article_initialization_prefers_html_over_text(self):
@@ -80,6 +96,28 @@ class TestArticle:
         assert article.html == "<p>HTML content</p>"
         assert article.text == "Text content"
         assert article.body == "<p>HTML content</p>"  # HTML takes precedence
+    
+    def test_article_body_precedence_html_over_markdown(self):
+        """Test that Article prefers html over markdown for body."""
+        data = {
+            "url": "https://example.com/article",
+            "html": "<p>HTML content</p>",
+            "markdown": "# Markdown content",
+        }
+        article = Article(data)
+        
+        assert article.body == "<p>HTML content</p>"
+    
+    def test_article_body_precedence_text_over_markdown(self):
+        """Test that Article prefers text over markdown for body."""
+        data = {
+            "url": "https://example.com/article",
+            "text": "Text content",
+            "markdown": "# Markdown content",
+        }
+        article = Article(data)
+        
+        assert article.body == "Text content"
     
     def test_article_initialization_with_rtl(self):
         """Test Article initialization with RTL language."""
@@ -326,8 +364,21 @@ class TestArticle:
         assert article.text == "Plain text content"
         assert article.body == "Plain text content"
     
-    def test_article_body_none_when_both_missing(self):
-        """Test Article body is None when both html and text are missing."""
+    def test_article_body_fallback_to_markdown_when_html_and_text_missing(self):
+        """Test Article body falls back to markdown when html and text are missing."""
+        data = {
+            "url": "https://example.com/article",
+            "markdown": "# Markdown content",
+        }
+        article = Article(data)
+        
+        assert article.html is None
+        assert article.text is None
+        assert article.markdown == "# Markdown content"
+        assert article.body == "# Markdown content"
+    
+    def test_article_body_none_when_all_missing(self):
+        """Test Article body is None when html, text, and markdown are all missing."""
         data = {
             "url": "https://example.com/article",
         }
@@ -335,4 +386,5 @@ class TestArticle:
         
         assert article.html is None
         assert article.text is None
+        assert article.markdown is None
         assert article.body is None
