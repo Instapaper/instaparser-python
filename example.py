@@ -11,11 +11,11 @@ import os
 import sys
 
 from instaparser import (
-    InstaparserClient,
+    InstaparserAPIError,
     InstaparserAuthenticationError,
+    InstaparserClient,
     InstaparserRateLimitError,
     InstaparserValidationError,
-    InstaparserAPIError,
 )
 
 
@@ -48,6 +48,7 @@ def cmd_article(client: InstaparserClient, args: argparse.Namespace) -> None:
 
 def cmd_summary(client: InstaparserClient, args: argparse.Namespace) -> None:
     """Call Summary API and print result."""
+
     def on_stream(line: str) -> None:
         if args.stream:
             print(f"  {line}")
@@ -84,7 +85,7 @@ def cmd_pdf(client: InstaparserClient, args: argparse.Namespace) -> None:
         )
     print(f"Title: {pdf.title}")
     print(f"Words: {pdf.words}")
-    body = (pdf.body or pdf.text or "")
+    body = pdf.body or pdf.text or ""
     print(f"Body (first 400 chars): {body[:400]}..." if body else "Body: (none)")
 
 

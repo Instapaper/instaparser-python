@@ -4,17 +4,17 @@ Instaparser Python Library
 A Python client library for the Instaparser API.
 """
 
-from .client import InstaparserClient
 from .article import Article
-from .pdf import PDF
-from .summary import Summary
+from .client import InstaparserClient
 from .exceptions import (
-    InstaparserError,
     InstaparserAPIError,
     InstaparserAuthenticationError,
+    InstaparserError,
     InstaparserRateLimitError,
     InstaparserValidationError,
 )
+from .pdf import PDF
+from .summary import Summary
 
 __version__ = "1.0.1"
 

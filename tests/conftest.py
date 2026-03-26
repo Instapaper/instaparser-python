@@ -3,9 +3,11 @@ Shared fixtures and utilities for tests.
 """
 
 import json
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock, Mock
+
 import pytest
 import requests
+
 from instaparser import InstaparserClient
 
 
@@ -119,11 +121,12 @@ def mock_pdf_response():
 @pytest.fixture
 def mock_response():
     """Create a mock requests.Response object."""
+
     def _create_response(status_code=200, json_data=None, text=None, headers=None):
         response = Mock(spec=requests.Response)
         response.status_code = status_code
         response.headers = headers or {"Content-Type": "application/json"}
-        
+
         if json_data is not None:
             response.json.return_value = json_data
             response.text = json.dumps(json_data)
@@ -133,8 +136,9 @@ def mock_response():
         else:
             response.json.return_value = {}
             response.text = ""
-        
+
         return response
+
     return _create_response
 
 
@@ -145,7 +149,7 @@ def mock_session(mocker):
     session.headers = {}
     session.post = MagicMock()
     session.get = MagicMock()
-    
+
     # Default successful response
     default_response = Mock(spec=requests.Response)
     default_response.status_code = 200
@@ -154,7 +158,7 @@ def mock_session(mocker):
     default_response.headers = {}
     session.post.return_value = default_response
     session.get.return_value = default_response
-    
+
     # Patch requests.Session to return our mock
-    mocker.patch('requests.Session', return_value=session)
+    mocker.patch("requests.Session", return_value=session)
     return session
