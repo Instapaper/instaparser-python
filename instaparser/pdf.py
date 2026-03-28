@@ -2,11 +2,12 @@
 PDF class representing a parsed PDF from Instaparser.
 """
 
-from typing import Any
+from dataclasses import dataclass
 
 from .article import Article
 
 
+@dataclass(repr=False)
 class PDF(Article):
     """
     Represents a parsed PDF from Instaparser.
@@ -15,17 +16,7 @@ class PDF(Article):
     PDFs always have is_rtl=False and videos=[].
     """
 
-    def __init__(self, data: dict[str, Any]):
-        """
-        Initialize a PDF from API response data.
-
-        Args:
-            data: Dictionary containing PDF data from the API
-        """
-        # Call parent constructor
-        super().__init__(data)
-
-        # PDFs always have is_rtl=False and videos=[]
+    def __post_init__(self) -> None:
         self.is_rtl = False
         self.videos = []
 
