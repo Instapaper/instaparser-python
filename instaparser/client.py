@@ -70,7 +70,9 @@ class InstaparserClient:
 
         if status_code == 200:
             try:
-                return response.json()
+                parsed = response.json()
+                if isinstance(parsed, dict):
+                    return parsed
             except ValueError:
                 # Some endpoints might return non-JSON
                 return {"raw": response.text}
