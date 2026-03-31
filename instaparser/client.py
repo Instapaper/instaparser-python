@@ -101,7 +101,7 @@ class InstaparserClient:
 
     Example:
         >>> client = InstaparserClient(api_key="your-api-key")
-        >>> article = client.Article(url="https://example.com/article")
+        >>> article = client.article(url="https://example.com/article")
         >>> print(article.body)
     """
 
@@ -186,7 +186,7 @@ class InstaparserClient:
             pass
         return {"raw": body}
 
-    def Article(self, url: str, content: str | None = None, output: str = "html", use_cache: bool = True) -> Article:
+    def article(self, url: str, content: str | None = None, output: str = "html", use_cache: bool = True) -> Article:
         """
         Parse an article from a URL or HTML content.
 
@@ -200,7 +200,7 @@ class InstaparserClient:
             Article object with parsed content
 
         Example:
-            >>> article = client.Article(url="https://example.com/article")
+            >>> article = client.article(url="https://example.com/article")
             >>> print(article.title)
             >>> print(article.body)
         """
@@ -239,7 +239,7 @@ class InstaparserClient:
             markdown=data.get("markdown"),
         )
 
-    def Summary(
+    def summary(
         self,
         url: str,
         content: str | None = None,
@@ -260,14 +260,14 @@ class InstaparserClient:
             Summary object with key_sentences and overview attributes
 
         Example:
-            >>> summary = client.Summary(url="https://example.com/article")
+            >>> summary = client.summary(url="https://example.com/article")
             >>> print(summary.overview)
             >>> print(summary.key_sentences)
 
             >>> # With streaming callback
             >>> def on_line(line):
             ...     print(f"Received: {line}")
-            >>> summary = client.Summary(url="https://example.com/article", stream_callback=on_line)
+            >>> summary = client.summary(url="https://example.com/article", stream_callback=on_line)
         """
         payload: dict[str, Any] = {
             "url": url,
@@ -306,7 +306,7 @@ class InstaparserClient:
             data = self._read_json(response)
             return Summary(key_sentences=data.get("key_sentences", []), overview=data.get("overview", ""))
 
-    def PDF(
+    def pdf(
         self,
         url: str | None = None,
         file: BinaryIO | bytes | None = None,
@@ -327,11 +327,11 @@ class InstaparserClient:
 
         Example:
             >>> # Parse PDF from URL
-            >>> pdf = client.PDF(url="https://example.com/document.pdf")
+            >>> pdf = client.pdf(url="https://example.com/document.pdf")
 
             >>> # Parse PDF from file
             >>> with open('document.pdf', 'rb') as f:
-            ...     pdf = client.PDF(file=f)
+            ...     pdf = client.pdf(file=f)
         """
         if output not in ("html", "text", "markdown"):
             raise InstaparserValidationError("output must be 'html', 'text', or 'markdown'")
@@ -382,3 +382,8 @@ class InstaparserClient:
             text=result.get("text"),
             markdown=result.get("markdown"),
         )
+
+    # Aliases for backwards compatibility:
+    Article = article
+    PDF = pdf
+    Summary = summary
