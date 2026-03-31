@@ -28,9 +28,7 @@ classifiers = [
     "Topic :: Text Processing :: Markup :: HTML",
     "Typing :: Typed",
 ]
-dependencies = [
-    "requests>=2.25.0",
-]
+dependencies = []
 
 [dependency-groups]
 dev = [
@@ -38,7 +36,6 @@ dev = [
     "pytest-cov>=4.0",
     "ruff>=0.1.0",
     "mypy>=1.0",
-    "types-requests",
 ]
 build = [
     "build>=1.4.0",

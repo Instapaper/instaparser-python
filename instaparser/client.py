@@ -3,11 +3,13 @@ InstaparserClient - Main client class for the Instaparser API.
 """
 
 import json
+import uuid
 from collections.abc import Callable
-from typing import Any, BinaryIO
-from urllib.parse import urljoin
-
-import requests
+from http.client import HTTPResponse
+from typing import Any, BinaryIO, NoReturn
+from urllib.error import HTTPError
+from urllib.parse import urlencode, urljoin
+from urllib.request import Request, urlopen
 
 from .article import Article
 from .exceptions import (
@@ -18,6 +20,79 @@ from .exceptions import (
 )
 from .pdf import PDF
 from .summary import Summary
+
+
+def _encode_multipart_formdata(
+    fields: dict[str, str],
+    files: dict[str, BinaryIO | bytes],
+) -> tuple[bytes, str]:
+    """
+    Encode fields and files as multipart/form-data.
+
+    Args:
+        fields: Dictionary of form field name/value pairs
+        files: Dictionary of file field name to file-like object or bytes
+
+    Returns:
+        Tuple of (encoded body bytes, content-type header value)
+    """
+    boundary = uuid.uuid4().hex
+    lines: list[bytes] = []
+
+    for name, value in fields.items():
+        lines.append(f"--{boundary}\r\n".encode())
+        lines.append(f'Content-Disposition: form-data; name="{name}"\r\n'.encode())
+        lines.append(b"\r\n")
+        lines.append(f"{value}\r\n".encode())
+
+    for name, file_data in files.items():
+        if hasattr(file_data, "read"):
+            data = file_data.read()
+        else:
+            data = file_data
+        lines.append(f"--{boundary}\r\n".encode())
+        lines.append(f'Content-Disposition: form-data; name="{name}"; filename="upload"\r\n'.encode())
+        lines.append(b"Content-Type: application/octet-stream\r\n")
+        lines.append(b"\r\n")
+        lines.append(data)
+        lines.append(b"\r\n")
+
+    lines.append(f"--{boundary}--\r\n".encode())
+
+    body = b"".join(lines)
+    content_type = f"multipart/form-data; boundary={boundary}"
+    return body, content_type
+
+
+def _map_http_error(e: HTTPError) -> NoReturn:
+    """
+    Translate an HTTPError into the appropriate Instaparser domain exception.
+
+    Reads the response body from the HTTPError, extracts the ``reason``
+    field from the JSON payload (if present), and raises the matching
+    Instaparser exception.
+    """
+    status_code = e.code
+
+    body = e.read().decode("utf-8")
+    error_message = f"API request failed with status {status_code}"
+    try:
+        error_data = json.loads(body)
+        if isinstance(error_data, dict) and "reason" in error_data:
+            error_message = error_data["reason"]
+    except (ValueError, json.JSONDecodeError):
+        error_message = body or error_message
+
+    errors: dict[int, tuple[type[InstaparserAPIError], str]] = {
+        400: (InstaparserValidationError, "Invalid request"),
+        401: (InstaparserAuthenticationError, "Invalid API key"),
+        403: (InstaparserAPIError, "Account suspended"),
+        409: (InstaparserAPIError, "Exceeded monthly API calls"),
+        429: (InstaparserRateLimitError, "Rate limit exceeded"),
+    }
+
+    exc_cls, default_msg = errors.get(status_code, (InstaparserAPIError, ""))
+    raise exc_cls(error_message or default_msg, status_code=status_code, response=e)
 
 
 class InstaparserClient:
@@ -42,69 +117,74 @@ class InstaparserClient:
         """
         self.api_key = api_key
         self.base_url = base_url or self.BASE_URL
-        self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            }
-        )
+        self.headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
 
-    def _handle_response(self, response: requests.Response) -> dict[str, Any]:
+    def __repr__(self) -> str:
+        return f"<InstaparserClient base_url={self.base_url!r}>"
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        json_data: dict | None = None,
+        params: dict | None = None,
+        multipart_fields: dict[str, str] | None = None,
+        multipart_files: dict[str, BinaryIO | bytes] | None = None,
+    ) -> HTTPResponse:
         """
-        Handle API response and raise appropriate exceptions.
+        Make an HTTP request using urllib.
 
         Args:
-            response: The HTTP response object
+            method: HTTP method (GET, POST)
+            path: API endpoint path (e.g. "/api/1/article")
+            json_data: JSON body payload
+            params: Query parameters
+            multipart_fields: Form fields for multipart upload
+            multipart_files: Files for multipart upload
 
         Returns:
-            Parsed JSON response data
+            HTTPResponse on success
 
         Raises:
-            InstaparserAuthenticationError: For 401 errors
-            InstaparserRateLimitError: For 429 errors
-            InstaparserValidationError: For 400 errors
-            InstaparserAPIError: For other API errors
+            HTTPError: On non-2xx status codes (callers convert via _map_http_error)
         """
-        status_code = response.status_code
+        url = urljoin(self.base_url, path)
+        if params:
+            url = f"{url}?{urlencode(params)}"
 
-        if status_code == 200:
-            try:
-                parsed = response.json()
-                if isinstance(parsed, dict):
-                    return parsed
-            except ValueError:
-                # Some endpoints might return non-JSON
-                return {"raw": response.text}
+        data = None
+        headers = self.headers
 
-        error_message = f"API request failed with status {status_code}"
+        if multipart_fields or multipart_files:
+            data, content_type = _encode_multipart_formdata(multipart_fields or {}, multipart_files or {})
+            headers = headers.copy()
+            headers["Content-Type"] = content_type
+        elif json_data is not None:
+            data = json.dumps(json_data).encode("utf-8")
+
+        req = Request(url, data=data, headers=headers, method=method)
+        response: HTTPResponse = urlopen(req)
+        return response
+
+    def _read_json(self, response: HTTPResponse) -> dict[str, Any]:
+        """
+        Read and parse a successful JSON response.
+
+        Returns:
+            Parsed JSON dict, or ``{"raw": text}`` if the body isn't valid JSON.
+        """
+        body = response.read().decode("utf-8")
         try:
-            error_data = response.json()
-            if isinstance(error_data, dict) and "reason" in error_data:
-                error_message = error_data["reason"]
-        except ValueError:
-            error_message = response.text or error_message
-
-        if status_code == 401:
-            raise InstaparserAuthenticationError(
-                error_message or "Invalid API key", status_code=status_code, response=response
-            )
-        elif status_code == 403:
-            raise InstaparserAPIError(error_message or "Account suspended", status_code=status_code, response=response)
-        elif status_code == 409:
-            raise InstaparserAPIError(
-                error_message or "Exceeded monthly API calls", status_code=status_code, response=response
-            )
-        elif status_code == 429:
-            raise InstaparserRateLimitError(
-                error_message or "Rate limit exceeded", status_code=status_code, response=response
-            )
-        elif status_code == 400:
-            raise InstaparserValidationError(
-                error_message or "Invalid request", status_code=status_code, response=response
-            )
-        else:
-            raise InstaparserAPIError(error_message, status_code=status_code, response=response)
+            parsed = json.loads(body)
+            if isinstance(parsed, dict):
+                return parsed
+        except (ValueError, json.JSONDecodeError):
+            pass
+        return {"raw": body}
 
     def Article(self, url: str, content: str | None = None, output: str = "html", use_cache: bool = True) -> Article:
         """
@@ -127,20 +207,21 @@ class InstaparserClient:
         if output not in ("html", "text", "markdown"):
             raise InstaparserValidationError("output must be 'html', 'text', or 'markdown'")
 
-        endpoint = urljoin(self.base_url, "/api/1/article")
-        payload = {
+        payload: dict[str, Any] = {
             "url": url,
             "output": output,
         }
-        # API expects string 'false' to disable cache, not boolean False
         if not use_cache:
             payload["use_cache"] = "false"
-
         if content is not None:
             payload["content"] = content
 
-        response = self.session.post(endpoint, json=payload)
-        data = self._handle_response(response)
+        try:
+            response = self._request("POST", "/api/1/article", json_data=payload)
+        except HTTPError as e:
+            _map_http_error(e)
+
+        data = self._read_json(response)
         return Article(
             url=data.get("url"),
             title=data.get("title"),
@@ -188,30 +269,27 @@ class InstaparserClient:
             ...     print(f"Received: {line}")
             >>> summary = client.Summary(url="https://example.com/article", stream_callback=on_line)
         """
-        endpoint = urljoin(self.base_url, "/api/1/summary")
-        payload = {
+        payload: dict[str, Any] = {
             "url": url,
             "stream": stream_callback is not None,
         }
-        # API expects string 'false' to disable cache, not boolean False
         if not use_cache:
             payload["use_cache"] = "false"
-
         if content is not None:
             payload["content"] = content
 
-        if stream_callback is not None:
-            # Handle streaming response
-            response = self.session.post(endpoint, json=payload, stream=True)
-            if response.status_code != 200:
-                self._handle_response(response)
+        try:
+            response = self._request("POST", "/api/1/summary", json_data=payload)
+        except HTTPError as e:
+            _map_http_error(e)
 
-            key_sentences = []
+        if stream_callback is not None:
+            key_sentences: list[str] = []
             overview = ""
-            for line in response.iter_lines():
+            for raw_line in response:
+                line = raw_line.strip(b"\r\n")
                 if line:
                     line_str = line.decode("utf-8")
-                    # Call the callback for each line
                     stream_callback(line_str)
 
                     if line_str.startswith("key_sentences:"):
@@ -225,12 +303,15 @@ class InstaparserClient:
 
             return Summary(key_sentences=key_sentences, overview=overview)
         else:
-            response = self.session.post(endpoint, json=payload)
-            data = self._handle_response(response)
+            data = self._read_json(response)
             return Summary(key_sentences=data.get("key_sentences", []), overview=data.get("overview", ""))
 
     def PDF(
-        self, url: str | None = None, file: BinaryIO | bytes | None = None, output: str = "html", use_cache: bool = True
+        self,
+        url: str | None = None,
+        file: BinaryIO | bytes | None = None,
+        output: str = "html",
+        use_cache: bool = True,
     ) -> PDF:
         """
         Parse a PDF from a URL or file.
@@ -255,37 +336,38 @@ class InstaparserClient:
         if output not in ("html", "text", "markdown"):
             raise InstaparserValidationError("output must be 'html', 'text', or 'markdown'")
 
-        endpoint = urljoin(self.base_url, "/api/1/pdf")
-
         if file is not None:
-            # POST request with file upload
-            files = {"file": file}
-            data = {
-                "output": output,
-            }
-            # API expects string 'false' to disable cache, not boolean False
+            fields = {"output": output}
             if not use_cache:
-                data["use_cache"] = "false"
+                fields["use_cache"] = "false"
             if url:
-                data["url"] = url
+                fields["url"] = url
 
-            # Remove Content-Type header for multipart/form-data
-            headers = {k: v for k, v in self.session.headers.items() if k != "Content-Type"}
-            response = self.session.post(endpoint, files=files, data=data, headers=headers)
+            try:
+                response = self._request(
+                    "POST",
+                    "/api/1/pdf",
+                    multipart_fields=fields,
+                    multipart_files={"file": file},
+                )
+            except HTTPError as e:
+                _map_http_error(e)
         elif url:
-            # GET request with URL
             params = {
                 "url": url,
                 "output": output,
             }
-            # API expects string 'false' to disable cache, not boolean False
             if not use_cache:
                 params["use_cache"] = "false"
-            response = self.session.get(endpoint, params=params)
+
+            try:
+                response = self._request("GET", "/api/1/pdf", params=params)
+            except HTTPError as e:
+                _map_http_error(e)
         else:
             raise InstaparserValidationError("Either 'url' or 'file' must be provided")
 
-        result = self._handle_response(response)
+        result = self._read_json(response)
         return PDF(
             url=result.get("url"),
             title=result.get("title"),
