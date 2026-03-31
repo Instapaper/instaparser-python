@@ -119,7 +119,6 @@ class TestClientInit:
     def test_headers(self):
         client = InstaparserClient(api_key=API_KEY)
         assert client.headers["Authorization"] == f"Bearer {API_KEY}"
-        assert client.headers["Content-Type"] == "application/json"
 
 
 class TestReadJson:

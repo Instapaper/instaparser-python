@@ -119,7 +119,6 @@ class InstaparserClient:
         self.base_url = base_url or self.BASE_URL
         self.headers = {
             "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
         }
 
     def __repr__(self) -> str:
@@ -157,14 +156,14 @@ class InstaparserClient:
             url = f"{url}?{urlencode(params)}"
 
         data = None
-        headers = self.headers
+        headers = self.headers.copy()
 
         if multipart_fields or multipart_files:
             data, content_type = _encode_multipart_formdata(multipart_fields or {}, multipart_files or {})
-            headers = headers.copy()
             headers["Content-Type"] = content_type
         elif json_data is not None:
             data = json.dumps(json_data).encode("utf-8")
+            headers["Content-Type"] = "application/json"
 
         req = Request(url, data=data, headers=headers, method=method)
         response: HTTPResponse = urlopen(req)
