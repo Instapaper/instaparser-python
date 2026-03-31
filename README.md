@@ -17,7 +17,7 @@ from instaparser import InstaparserClient
 client = InstaparserClient(api_key="your-api-key")
 
 # Parse an article from a URL
-article = client.Article(url="https://example.com/article")
+article = client.article(url="https://example.com/article")
 
 # Access article properties
 print(article.title)
@@ -46,26 +46,26 @@ from instaparser import InstaparserClient
 client = InstaparserClient(api_key="your-api-key")
 
 # Parse from URL (HTML output)
-article = client.Article(url="https://example.com/article")
+article = client.article(url="https://example.com/article")
 print(article.html)  # HTML content
 print(article.body)  # Same as html when output='html'
 
 # Parse from URL (text output)
-article = client.Article(url="https://example.com/article", output="text")
+article = client.article(url="https://example.com/article", output="text")
 print(article.text)  # Plain text content
 print(article.body)  # Same as text when output='text'
 
 # Parse from URL (markdown output)
-article = client.Article(url="https://example.com/article", output="markdown")
+article = client.article(url="https://example.com/article", output="markdown")
 print(article.markdown)  # Markdown content
 print(article.body)      # Same as markdown when output='markdown'
 
 # Parse from HTML content
 html_content = "<html><body><h1>Title</h1><p>Content</p></body></html>"
-article = client.Article(url="https://example.com/article", content=html_content)
+article = client.article(url="https://example.com/article", content=html_content)
 
 # Disable cache
-article = client.Article(url="https://example.com/article", use_cache=False)
+article = client.article(url="https://example.com/article", use_cache=False)
 ```
 
 ### Article Properties
@@ -73,7 +73,7 @@ article = client.Article(url="https://example.com/article", use_cache=False)
 The `Article` object provides access to all parsed metadata:
 
 ```python
-article = client.Article(url="https://example.com/article")
+article = client.article(url="https://example.com/article")
 
 # Basic properties
 article.url          # Canonical URL
@@ -103,7 +103,7 @@ Generate AI-powered summaries:
 
 ```python
 # Generate summary
-summary = client.Summary(url="https://example.com/article")
+summary = client.summary(url="https://example.com/article")
 
 print(summary.overview)        # Concise summary
 print(summary.key_sentences)   # List of key sentences
@@ -112,7 +112,7 @@ print(summary.key_sentences)   # List of key sentences
 def on_stream_line(line):
     print(f"Streaming: {line}")
 
-summary = client.Summary(
+summary = client.summary(
     url="https://example.com/article",
     stream_callback=on_stream_line
 )
@@ -124,19 +124,19 @@ Parse PDFs from URLs or files. The PDF class inherits from Article, so it has al
 
 ```python
 # Parse PDF from URL
-pdf = client.PDF(url="https://example.com/document.pdf")
+pdf = client.pdf(url="https://example.com/document.pdf")
 
 # Parse PDF from file
 with open('document.pdf', 'rb') as f:
-    pdf = client.PDF(file=f)
+    pdf = client.pdf(file=f)
 
 # Parse PDF with text output
-pdf = client.PDF(url="https://example.com/document.pdf", output="text")
+pdf = client.pdf(url="https://example.com/document.pdf", output="text")
 print(pdf.text)
 print(pdf.body)  # Same as text when output='text'
 
 # Parse PDF with markdown output
-pdf = client.PDF(url="https://example.com/document.pdf", output="markdown")
+pdf = client.pdf(url="https://example.com/document.pdf", output="markdown")
 print(pdf.markdown)
 print(pdf.body)  # Same as markdown when output='markdown'
 
@@ -162,7 +162,7 @@ from instaparser import (
 client = InstaparserClient(api_key="your-api-key")
 
 try:
-    article = client.Article(url="https://example.com/article")
+    article = client.article(url="https://example.com/article")
 except InstaparserAuthenticationError:
     print("Invalid API key")
 except InstaparserRateLimitError:
@@ -185,7 +185,7 @@ Initialize the client.
 
 - `api_key`: Your Instaparser API key
 
-#### `Article(url: str, content: Optional[str] = None, output: str = 'html', use_cache: bool = True) -> Article`
+#### `article(url: str, content: Optional[str] = None, output: str = 'html', use_cache: bool = True) -> Article`
 
 Parse an article from a URL or HTML content.
 
@@ -196,7 +196,7 @@ Parse an article from a URL or HTML content.
 
 Returns: `Article` object
 
-#### `Summary(url: str, content: Optional[str] = None, use_cache: bool = True, stream_callback: Optional[Callable[[str], None]] = None) -> Summary`
+#### `summary(url: str, content: Optional[str] = None, use_cache: bool = True, stream_callback: Optional[Callable[[str], None]] = None) -> Summary`
 
 Generate a summary of an article.
 
@@ -207,7 +207,7 @@ Generate a summary of an article.
 
 Returns: `Summary` object with `key_sentences` and `overview` attributes
 
-#### `PDF(url: Optional[str] = None, file: Optional[Union[BinaryIO, bytes]] = None, output: str = 'html', use_cache: bool = True) -> PDF`
+#### `pdf(url: Optional[str] = None, file: Optional[Union[BinaryIO, bytes]] = None, output: str = 'html', use_cache: bool = True) -> PDF`
 
 Parse a PDF from a URL or file.
 

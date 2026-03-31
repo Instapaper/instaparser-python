@@ -30,7 +30,7 @@ def get_api_key(args: argparse.Namespace) -> str:
 
 def cmd_article(client: InstaparserClient, args: argparse.Namespace) -> None:
     """Call Article API and print result."""
-    article = client.Article(
+    article = client.article(
         url=args.url,
         output=args.output,
         use_cache=not args.no_cache,
@@ -53,7 +53,7 @@ def cmd_summary(client: InstaparserClient, args: argparse.Namespace) -> None:
         if args.stream:
             print(f"  {line}")
 
-    summary = client.Summary(
+    summary = client.summary(
         url=args.url,
         use_cache=not args.no_cache,
         stream_callback=on_stream if args.stream else None,
@@ -68,7 +68,7 @@ def cmd_pdf(client: InstaparserClient, args: argparse.Namespace) -> None:
     """Call PDF API and print result."""
     if args.file:
         with open(args.file, "rb") as f:
-            pdf = client.PDF(
+            pdf = client.pdf(
                 file=f,
                 url=args.url or None,
                 output=args.output,
@@ -78,7 +78,7 @@ def cmd_pdf(client: InstaparserClient, args: argparse.Namespace) -> None:
         if not args.url:
             print("Error: --url or --file required for pdf.", file=sys.stderr)
             sys.exit(1)
-        pdf = client.PDF(
+        pdf = client.pdf(
             url=args.url,
             output=args.output,
             use_cache=not args.no_cache,
