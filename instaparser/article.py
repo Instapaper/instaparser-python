@@ -38,8 +38,8 @@ class Article:
     thumbnail: str | None = None
     words: int = 0
     is_rtl: bool = False
-    images: list = field(default_factory=list)
-    videos: list = field(default_factory=list)
+    images: list[str] = field(default_factory=list)
+    videos: list[str] = field(default_factory=list)
     html: str | None = None
     text: str | None = None
     markdown: str | None = None
