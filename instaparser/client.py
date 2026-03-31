@@ -108,19 +108,26 @@ class InstaparserClient:
 
     BASE_URL = "https://instaparser.com"
 
-    def __init__(self, api_key: str, base_url: str | None = None):
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str | None = None,
+        timeout: float | None = 60,
+    ):
         """
         Initialize the Instaparser client.
 
         Args:
             api_key: Your Instaparser API key
             base_url: Optional base URL for the API (defaults to production)
+            timeout: Default timeout in seconds for blocking operations
         """
         self.api_key = api_key
         self.base_url = base_url or self.BASE_URL
         self.headers = {
             "Authorization": f"Bearer {api_key}",
         }
+        self.timeout = timeout
 
     def __repr__(self) -> str:
         return f"<InstaparserClient base_url={self.base_url!r}>"
@@ -134,6 +141,7 @@ class InstaparserClient:
         params: dict | None = None,
         multipart_fields: dict[str, str] | None = None,
         multipart_files: dict[str, BinaryIO | bytes] | None = None,
+        timeout: float | None = None,
     ) -> HTTPResponse:
         """
         Make an HTTP request using urllib.
@@ -145,6 +153,7 @@ class InstaparserClient:
             params: Query parameters
             multipart_fields: Form fields for multipart upload
             multipart_files: Files for multipart upload
+            timeout: Timeout in seconds for blocking operations
 
         Returns:
             HTTPResponse on success
@@ -166,8 +175,11 @@ class InstaparserClient:
             data = json.dumps(json_data).encode("utf-8")
             headers["Content-Type"] = "application/json"
 
+        if timeout is None:
+            timeout = self.timeout
+
         req = Request(url, data=data, headers=headers, method=method)
-        response: HTTPResponse = urlopen(req)
+        response: HTTPResponse = urlopen(req, timeout=timeout)
         return response
 
     def _read_json(self, response: HTTPResponse) -> dict[str, Any]:
@@ -186,7 +198,14 @@ class InstaparserClient:
             pass
         return {"raw": body}
 
-    def article(self, url: str, content: str | None = None, output: str = "html", use_cache: bool = True) -> Article:
+    def article(
+        self,
+        url: str,
+        content: str | None = None,
+        output: str = "html",
+        use_cache: bool = True,
+        timeout: float | None = None,
+    ) -> Article:
         """
         Parse an article from a URL or HTML content.
 
@@ -195,6 +214,7 @@ class InstaparserClient:
             content: Optional raw HTML content to parse instead of fetching from URL
             output: Output format - 'html' (default), 'text', or 'markdown'
             use_cache: Whether to use cache (default: True)
+            timeout: Timeout in seconds (default: use default client timeout)
 
         Returns:
             Article object with parsed content
@@ -217,7 +237,12 @@ class InstaparserClient:
             payload["content"] = content
 
         try:
-            response = self._request("POST", "/api/1/article", json_data=payload)
+            response = self._request(
+                "POST",
+                "/api/1/article",
+                json_data=payload,
+                timeout=timeout,
+            )
         except HTTPError as e:
             _map_http_error(e)
 
@@ -245,6 +270,7 @@ class InstaparserClient:
         content: str | None = None,
         use_cache: bool = True,
         stream_callback: Callable[[str], None] | None = None,
+        timeout: float | None = None,
     ) -> Summary:
         """
         Generate a summary of an article.
@@ -255,6 +281,7 @@ class InstaparserClient:
             use_cache: Whether to use cache (default: True)
             stream_callback: Optional callback function called for each line of streaming response.
                            If provided, enables streaming mode. The callback receives each line as a string.
+            timeout: Timeout in seconds (default: use default client timeout)
 
         Returns:
             Summary object with key_sentences and overview attributes
@@ -279,7 +306,12 @@ class InstaparserClient:
             payload["content"] = content
 
         try:
-            response = self._request("POST", "/api/1/summary", json_data=payload)
+            response = self._request(
+                "POST",
+                "/api/1/summary",
+                json_data=payload,
+                timeout=timeout,
+            )
         except HTTPError as e:
             _map_http_error(e)
 
@@ -312,6 +344,7 @@ class InstaparserClient:
         file: BinaryIO | bytes | None = None,
         output: str = "html",
         use_cache: bool = True,
+        timeout: float | None = None,
     ) -> PDF:
         """
         Parse a PDF from a URL or file.
@@ -321,6 +354,7 @@ class InstaparserClient:
             file: PDF file to upload (required for POST request, can be file-like object or bytes)
             output: Output format - 'html' (default), 'text', or 'markdown'
             use_cache: Whether to use cache (default: True)
+            timeout: Timeout in seconds (default: use default client timeout)
 
         Returns:
             PDF object with parsed PDF content (inherits from Article)
@@ -349,6 +383,7 @@ class InstaparserClient:
                     "/api/1/pdf",
                     multipart_fields=fields,
                     multipart_files={"file": file},
+                    timeout=timeout,
                 )
             except HTTPError as e:
                 _map_http_error(e)
@@ -361,7 +396,12 @@ class InstaparserClient:
                 params["use_cache"] = "false"
 
             try:
-                response = self._request("GET", "/api/1/pdf", params=params)
+                response = self._request(
+                    "GET",
+                    "/api/1/pdf",
+                    params=params,
+                    timeout=timeout,
+                )
             except HTTPError as e:
                 _map_http_error(e)
         else:
