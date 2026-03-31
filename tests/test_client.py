@@ -343,6 +343,26 @@ class TestURLConstruction:
         assert req.full_url.startswith("https://api.test.com/api/1/article")
 
 
+class TestDeprecatedAliases:
+    def test_article_alias(self, client, mock_request):
+        mock_request.return_value = make_response(json_data=ARTICLE_DATA)
+        with pytest.warns(DeprecationWarning, match="client.Article.*deprecated.*client.article"):
+            article = client.Article(url="https://example.com/article")
+        assert article.title == "Test Article Title"
+
+    def test_pdf_alias(self, client, mock_request):
+        mock_request.return_value = make_response(json_data=PDF_DATA)
+        with pytest.warns(DeprecationWarning, match="client.PDF.*deprecated.*client.pdf"):
+            pdf = client.PDF(url="https://example.com/document.pdf")
+        assert pdf.title == "Test PDF Document"
+
+    def test_summary_alias(self, client, mock_request):
+        mock_request.return_value = make_response(json_data=SUMMARY_DATA)
+        with pytest.warns(DeprecationWarning, match="client.Summary.*deprecated.*client.summary"):
+            summary = client.Summary(url="https://example.com/article")
+        assert summary.overview == SUMMARY_DATA["overview"]
+
+
 class TestMultipleClients:
     def test_independent_instances(self):
         c1 = InstaparserClient(api_key="key1", base_url="https://api1.com")

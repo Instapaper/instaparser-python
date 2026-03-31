@@ -4,6 +4,7 @@ InstaparserClient - Main client class for the Instaparser API.
 
 import json
 import uuid
+import warnings
 from collections.abc import Callable
 from http.client import HTTPResponse
 from typing import Any, BinaryIO, NoReturn
@@ -383,7 +384,31 @@ class InstaparserClient:
             markdown=result.get("markdown"),
         )
 
-    # Aliases for backwards compatibility:
-    Article = article
-    PDF = pdf
-    Summary = summary
+    # Deprecated aliases for backwards compatibility:
+
+    def Article(self, *args: Any, **kwargs: Any) -> Article:  # noqa: N802
+        """Deprecated: use client.article() instead."""
+        warnings.warn(
+            "client.Article() is deprecated, use client.article() instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.article(*args, **kwargs)
+
+    def PDF(self, *args: Any, **kwargs: Any) -> PDF:  # noqa: N802
+        """Deprecated: use client.pdf() instead."""
+        warnings.warn(
+            "client.PDF() is deprecated, use client.pdf() instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.pdf(*args, **kwargs)
+
+    def Summary(self, *args: Any, **kwargs: Any) -> Summary:  # noqa: N802
+        """Deprecated: use client.summary() instead."""
+        warnings.warn(
+            "client.Summary() is deprecated, use client.summary() instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.summary(*args, **kwargs)
