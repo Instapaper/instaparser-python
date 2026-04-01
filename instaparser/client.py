@@ -79,7 +79,7 @@ def _map_http_error(e: HTTPError) -> NoReturn:
         error_data = json.loads(body)
         if isinstance(error_data, dict) and "reason" in error_data:
             error_message = error_data["reason"]
-    except (ValueError, json.JSONDecodeError):
+    except json.JSONDecodeError:
         error_message = body or error_message
 
     errors: dict[int, tuple[type[InstaparserAPIError], str]] = {
@@ -192,7 +192,7 @@ class InstaparserClient:
             parsed = json.loads(body)
             if isinstance(parsed, dict):
                 return parsed
-        except (ValueError, json.JSONDecodeError):
+        except json.JSONDecodeError:
             pass
         return {"raw": body}
 
