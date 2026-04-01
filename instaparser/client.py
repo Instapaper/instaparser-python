@@ -212,7 +212,7 @@ class InstaparserClient:
             "output": output,
         }
         if not use_cache:
-            payload["use_cache"] = "false"
+            payload["use_cache"] = False
         if content is not None:
             payload["content"] = content
 
@@ -274,7 +274,7 @@ class InstaparserClient:
             "stream": stream_callback is not None,
         }
         if not use_cache:
-            payload["use_cache"] = "false"
+            payload["use_cache"] = False
         if content is not None:
             payload["content"] = content
 
@@ -337,7 +337,7 @@ class InstaparserClient:
             raise InstaparserValidationError("output must be 'html', 'text', or 'markdown'")
 
         if file is not None:
-            fields = {"output": output}
+            fields: dict[str, Any] = {"output": output}
             if not use_cache:
                 fields["use_cache"] = "false"
             if url:
@@ -353,7 +353,7 @@ class InstaparserClient:
             except HTTPError as e:
                 _map_http_error(e)
         elif url:
-            params = {
+            params: dict[str, Any] = {
                 "url": url,
                 "output": output,
             }
