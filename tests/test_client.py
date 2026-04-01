@@ -170,7 +170,7 @@ class TestArticle:
     def test_use_cache_false(self, client, mock_request):
         mock_request.return_value = make_response(json_data=ARTICLE_DATA)
         client.article(url="u", use_cache=False)
-        assert mock_request.call_args[1]["json_data"]["use_cache"] == "false"
+        assert mock_request.call_args[1]["json_data"]["use_cache"] is False
 
     def test_invalid_output(self, client):
         with pytest.raises(InstaparserValidationError, match="output must be"):
@@ -200,7 +200,7 @@ class TestSummary:
     def test_use_cache_false(self, client, mock_request):
         mock_request.return_value = make_response(json_data=SUMMARY_DATA)
         client.summary(url="u", use_cache=False)
-        assert mock_request.call_args[1]["json_data"]["use_cache"] == "false"
+        assert mock_request.call_args[1]["json_data"]["use_cache"] is False
 
     def test_empty_response(self, client, mock_request):
         mock_request.return_value = make_response(json_data={})
