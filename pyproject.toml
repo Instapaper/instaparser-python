@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "instaparser"
@@ -16,7 +16,6 @@ keywords = ["instaparser", "article", "parser", "web-scraping", "content-extract
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -49,18 +48,8 @@ Repository = "https://github.com/Instapaper/instaparser-python.git"
 Issues = "https://github.com/Instapaper/instaparser-python/issues"
 Changelog = "https://github.com/Instapaper/instaparser-python/blob/main/CHANGELOG.md"
 
-[tool.hatch.version]
-path = "instaparser/__init__.py"
-
-[tool.hatch.build.targets.sdist]
-include = [
-    "instaparser/",
-    "LICENSE",
-    "README.md",
-]
-
-[tool.hatch.build.targets.wheel]
-packages = ["instaparser"]
+[tool.setuptools.dynamic]
+version = {attr = "instaparser.__version__"}
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
