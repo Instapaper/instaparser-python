@@ -1,6 +1,4 @@
-"""
-Article class representing a parsed article from Instaparser.
-"""
+"""Model classes representing parsed results from Instaparser."""
 
 from dataclasses import dataclass, field
 from typing import Any
@@ -54,3 +52,41 @@ class Article:
 
     def __str__(self) -> str:
         return self.body or ""
+
+
+@dataclass(repr=False)
+class PDF(Article):
+    """
+    Represents a parsed PDF from Instaparser.
+
+    Inherits from Article since most fields are the same.
+    PDFs always have is_rtl=False and videos=[].
+    """
+
+    def __post_init__(self) -> None:
+        self.is_rtl = False
+        self.videos = []
+
+    def __repr__(self) -> str:
+        return f"<PDF url={self.url!r} title={self.title!r}>"
+
+
+@dataclass(repr=False)
+class Summary:
+    """
+    Represents a summary result from Instaparser.
+
+    Attributes:
+        key_sentences: List of key sentences extracted from the article
+        overview: Concise summary of the article
+    """
+
+    key_sentences: list[str]
+    overview: str
+
+    def __repr__(self) -> str:
+        overview = self.overview[:50] + "..." if len(self.overview) > 50 else self.overview
+        return f"<Summary overview={overview!r} key_sentences={len(self.key_sentences)}>"
+
+    def __str__(self) -> str:
+        return self.overview

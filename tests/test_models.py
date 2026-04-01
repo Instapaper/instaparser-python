@@ -1,8 +1,8 @@
 """
-Tests for Article class.
+Tests for model classes.
 """
 
-from instaparser.article import Article
+from instaparser.models import PDF, Article, Summary
 
 
 class TestArticle:
@@ -60,3 +60,60 @@ class TestArticle:
         """Test __str__ returns empty string when body is None."""
         article = Article()
         assert str(article) == ""
+
+
+class TestPDF:
+    """Tests for PDF class."""
+
+    def test_inherits_from_article(self):
+        """Test that PDF inherits from Article."""
+        assert issubclass(PDF, Article)
+
+    def test_forces_is_rtl_false(self):
+        """Test that PDF always sets is_rtl to False, even if True is passed."""
+        pdf = PDF(is_rtl=True)
+        assert pdf.is_rtl is False
+
+    def test_forces_videos_empty(self):
+        """Test that PDF always sets videos to [], even if videos are passed."""
+        pdf = PDF(videos=["https://example.com/video.mp4"])
+        assert pdf.videos == []
+
+    def test_repr(self):
+        """Test __repr__ includes class name, url, and title."""
+        pdf = PDF(url="https://example.com/doc.pdf", title="Test PDF")
+        repr_str = repr(pdf)
+        assert "PDF" in repr_str
+        assert "https://example.com/doc.pdf" in repr_str
+        assert "Test PDF" in repr_str
+
+    def test_str_returns_body(self):
+        """Test that __str__ is inherited from Article and returns body."""
+        pdf = PDF(html="<p>Content</p>")
+        assert str(pdf) == "<p>Content</p>"
+
+
+class TestSummary:
+    """Tests for Summary class."""
+
+    def test_repr_truncates_long_overview(self):
+        """Test __repr__ truncates overview longer than 50 characters."""
+        summary = Summary(
+            key_sentences=["Sentence 1", "Sentence 2"],
+            overview="This is a test overview that is longer than 50 characters for truncation",
+        )
+        repr_str = repr(summary)
+        assert "..." in repr_str
+        assert "key_sentences=2" in repr_str
+
+    def test_repr_does_not_truncate_short_overview(self):
+        """Test __repr__ does not add ellipsis for short overview."""
+        summary = Summary(key_sentences=["Sentence"], overview="Short")
+        repr_str = repr(summary)
+        assert "..." not in repr_str
+        assert "key_sentences=1" in repr_str
+
+    def test_str_returns_overview(self):
+        """Test __str__ returns the overview."""
+        summary = Summary(key_sentences=["Sentence"], overview="The overview")
+        assert str(summary) == "The overview"

@@ -4,7 +4,6 @@ Instaparser Python Library
 A Python client library for the Instaparser API.
 """
 
-from .article import Article
 from .client import InstaparserClient
 from .exceptions import (
     InstaparserAPIError,
@@ -13,8 +12,7 @@ from .exceptions import (
     InstaparserRateLimitError,
     InstaparserValidationError,
 )
-from .pdf import PDF
-from .summary import Summary
+from .models import PDF, Article, Summary
 
 __version__ = "1.0.1"
 

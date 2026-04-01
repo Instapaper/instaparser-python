@@ -6,7 +6,6 @@ from urllib.error import HTTPError, URLError
 import pytest
 
 from instaparser import InstaparserClient
-from instaparser.article import Article
 from instaparser.client import _encode_multipart_formdata
 from instaparser.exceptions import (
     InstaparserAPIError,
@@ -14,6 +13,7 @@ from instaparser.exceptions import (
     InstaparserRateLimitError,
     InstaparserValidationError,
 )
+from instaparser.models import Article
 
 API_KEY = "test-api-key-12345"
 BASE_URL = "https://api.test.instaparser.com"

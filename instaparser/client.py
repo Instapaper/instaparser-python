@@ -12,15 +12,13 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode, urljoin
 from urllib.request import Request, urlopen
 
-from .article import Article
 from .exceptions import (
     InstaparserAPIError,
     InstaparserAuthenticationError,
     InstaparserRateLimitError,
     InstaparserValidationError,
 )
-from .pdf import PDF
-from .summary import Summary
+from .models import PDF, Article, Summary
 
 
 def _encode_multipart_formdata(
