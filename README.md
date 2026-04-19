@@ -179,11 +179,13 @@ except InstaparserAPIError as e:
 
 Main client class for interacting with the Instaparser API.
 
-#### `__init__(api_key: str)`
+#### `__init__(api_key: str, base_url: str | None = None, timeout: float | None = 60)`
 
 Initialize the client.
 
 - `api_key`: Your Instaparser API key
+- `base_url`: Optional override for the API base URL
+- `timeout`: Connection timeout in seconds (default: `60`; pass `None` to disable)
 
 #### `article(url: str, content: Optional[str] = None, output: str = 'html', use_cache: bool = True) -> Article`
 
